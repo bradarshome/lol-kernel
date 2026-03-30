@@ -34,24 +34,22 @@ log_step() { echo -e "${BLUE}[STEP]${NC} $1"; }
 # Banner
 # ============================================
 show_banner() {
-    echo -e "${CYAN}"
-    echo "  ╔══════════════════════════════════════════════╗"
-    echo "  ║                                              ║"
-    echo "  ║   _ _    _                 _ _              ║"
-    echo "  ║  | | |  | |               | (_)             ║"
-    echo "  ║  | | |  | | __ _ _ __   __| |_ _ __   __ _  ║"
-    echo "  ║  _   | | |  | |/ _\` | '_ \\ / _\` | | '_ \\ / _\`| ║"
-    echo "  ║ | |__| | |__| | (_| | | | | (_| | | | | | (_| |║"
-    echo "  ║  \\____/ \\____/ \\__,_|_| |_|\\__,_|_|_| |_|\\__, |║"
-    echo "  ║                                            __/ |║"
-    echo "  ║                                           |___/ ║"
-    echo "  ║                                              ║"
-    echo "  ║   GKI Universal Kernel                       ║"
-    echo "  ║   KernelSU + SUSFS + Zygisk + AnyKernel3    ║"
-    echo "  ║                                              ║"
-    echo "  ║   v${PROJECT_VERSION} by ${PROJECT_AUTHOR}                        ║"
-    echo "  ╚══════════════════════════════════════════════╝"
-    echo -e "${NC}"
+    echo ""
+    echo -e "${CYAN}  ╔══════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}  ║                                                  ║${NC}"
+    echo -e "${CYAN}  ║   ${BOLD}██╗      ██████╗ ██╗     ██╗  ██╗███████╗${CYAN}     ║${NC}"
+    echo -e "${CYAN}  ║   ${BOLD}██║     ██╔═══██╗██║     ██║ ██╔╝██╔════╝${CYAN}     ║${NC}"
+    echo -e "${CYAN}  ║   ${BOLD}██║     ██║   ██║██║     █████╔╝ █████╗${CYAN}       ║${NC}"
+    echo -e "${CYAN}  ║   ${BOLD}██║     ██║   ██║██║     ██╔═██╗ ██╔══╝${CYAN}       ║${NC}"
+    echo -e "${CYAN}  ║   ${BOLD}███████╗╚██████╔╝███████╗██║  ██╗███████╗${CYAN}     ║${NC}"
+    echo -e "${CYAN}  ║   ${BOLD}╚══════╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝${CYAN}     ║${NC}"
+    echo -e "${CYAN}  ║                                                  ║${NC}"
+    echo -e "${CYAN}  ║   ${GREEN}GKI Universal Kernel${CYAN}                            ║${NC}"
+    echo -e "${CYAN}  ║   ${GREEN}KernelSU + SUSFS + Zygisk + AnyKernel3${CYAN}       ║${NC}"
+    echo -e "${CYAN}  ║                                                  ║${NC}"
+    echo -e "${CYAN}  ║   ${YELLOW}v${PROJECT_VERSION} by ${PROJECT_AUTHOR}${CYAN}                              ║${NC}"
+    echo -e "${CYAN}  ╚══════════════════════════════════════════════════╝${NC}"
+    echo ""
 }
 
 # ============================================
@@ -59,13 +57,11 @@ show_banner() {
 # ============================================
 show_menu() {
     echo -e "${BOLD}Build Options:${NC}"
-    echo ""
     echo "  1) Build Kernel 5.10 (Android 12)"
     echo "  2) Build Kernel 6.6 (Android 15)"
     echo "  3) Build All Versions"
     echo ""
     echo -e "${BOLD}Utilities:${NC}"
-    echo ""
     echo "  4) Setup Source Only (download kernel source)"
     echo "  5) Apply Patches Only (SUSFS + KSU + Zygisk)"
     echo "  6) Clean Build"
@@ -73,8 +69,6 @@ show_menu() {
     echo ""
     echo "  0) Exit"
     echo ""
-    read -p "Pilih opsi [0-7]: " choice
-    echo "$choice"
 }
 
 # ============================================
@@ -184,7 +178,8 @@ main() {
 
     # Interactive menu
     while true; do
-        choice=$(show_menu)
+        show_menu
+        read -rp "Pilih opsi [0-7]: " choice
 
         case "$choice" in
             1)
@@ -200,12 +195,12 @@ main() {
                 ;;
             4)
                 echo ""
-                read -p "Kernel version (5.10/6.6): " ver
+                read -rp "Kernel version (5.10/6.6): " ver
                 bash "$SCRIPT_DIR/scripts/setup_source.sh" "$ver"
                 ;;
             5)
                 echo ""
-                read -p "Kernel version (5.10/6.6): " ver
+                read -rp "Kernel version (5.10/6.6): " ver
                 SOURCE_DIR="$SCRIPT_DIR/kernel-source/$ver"
                 bash "$SCRIPT_DIR/scripts/apply_susfs.sh" "$ver" "$SOURCE_DIR"
                 bash "$SCRIPT_DIR/scripts/apply_ksu.sh" "$ver" "$SOURCE_DIR"
@@ -227,7 +222,7 @@ main() {
         esac
 
         echo ""
-        read -p "Press Enter to continue..."
+        read -rp "Press Enter to continue..."
         echo ""
     done
 }
