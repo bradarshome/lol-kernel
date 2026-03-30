@@ -46,9 +46,10 @@ RUN apt-get update && apt-get install -y \
     llvm \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up git config
+# Set up git config (name can be overridden at build time)
+ARG PROJECT_NAME=LolKernel
 RUN git config --global user.email "builder@lolkernel.local" \
-    && git config --global user.name "LolKernel Builder"
+    && git config --global user.name "$PROJECT_NAME Builder"
 
 # Working directory
 WORKDIR /build

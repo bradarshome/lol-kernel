@@ -38,7 +38,7 @@ if [[ ! -d "$KERNEL_DIR" ]]; then
     exit 1
 fi
 
-log_info "=== LolKernel Build Process ==="
+log_info "=== $PROJECT_NAME Build Process ==="
 log_info "Kernel Version: $KERNEL_VERSION"
 log_info "Source Dir: $SOURCE_DIR"
 log_info "Build Jobs: $BUILD_JOBS"
@@ -68,7 +68,10 @@ log_info "Using defconfig: $DEFCONFIG"
 
 # Create custom config fragment
 CUSTOM_CONFIG="$BUILD_OUT/custom.config"
-cat > "$CUSTOM_CONFIG" << 'CONF'
+cat > "$CUSTOM_CONFIG" << CONF
+# Kernel Version String
+CONFIG_LOCALVERSION="-$PROJECT_NAME"
+
 # KernelSU
 CONFIG_KSU=y
 
@@ -201,8 +204,8 @@ log_step "4/4 Saving build info..."
 
 BUILD_INFO="$BUILD_OUT/build_info.txt"
 cat > "$BUILD_INFO" << INFO
-LolKernel Build Information
-===========================
+$PROJECT_NAME Build Information
+===============================
 Project: $PROJECT_NAME v$PROJECT_VERSION
 Kernel Version: $KERNEL_VERSION
 Build Date: $(date -u '+%Y-%m-%d %H:%M:%S UTC')

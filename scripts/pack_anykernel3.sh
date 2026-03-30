@@ -79,13 +79,13 @@ fi
 
 # Generate anykernel.sh for GKI
 log_info "Generating AnyKernel3 configuration..."
-cat > "$AK3_WORK/anykernel.sh" << 'AKSCRIPT'
+cat > "$AK3_WORK/anykernel.sh" << AKSCRIPT
 #!/bin/bash
 # AnyKernel3 Ramdisk Mod Script
 # LolKernel - GKI Universal Kernel with KernelSU + SUSFS
 
 properties() { '
-kernel.string=LolKernel GKI Universal @ bradarshome
+kernel.string=$PROJECT_NAME GKI Universal @ $PROJECT_AUTHOR
 do.devicecheck=0
 do.modules=1
 do.systemless=1
@@ -131,7 +131,7 @@ AKSCRIPT
 
 # Generate update-binary for TWRP/OTG compatibility
 mkdir -p "$AK3_WORK/META-INF/com/google/android"
-cat > "$AK3_WORK/META-INF/com/google/android/update-binary" << 'UPDATER'
+cat > "$AK3_WORK/META-INF/com/google/android/update-binary" << UPDATER
 #!/sbin/sh
 OUTFD=$2
 ZIP=$3
@@ -142,7 +142,7 @@ ui_print" >> /proc/self/fd/$OUTFD
 }
 
 ui_print "*******************************"
-ui_print "  LolKernel GKI Universal       "
+ui_print "  $PROJECT_NAME GKI Universal       "
 ui_print "  KernelSU + SUSFS + Zygisk    "
 ui_print "*******************************"
 ui_print ""

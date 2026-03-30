@@ -48,7 +48,7 @@ esac
 
 SOURCE_DIR="$PROJECT_DIR/kernel-source/$KERNEL_VERSION"
 
-log_info "=== LolKernel Source Setup ==="
+log_info "=== $PROJECT_NAME Source Setup ==="
 log_info "Kernel Version: $KERNEL_VERSION"
 log_info "AOSP Branch: $AOSP_BRANCH"
 log_info "Source Dir: $SOURCE_DIR"

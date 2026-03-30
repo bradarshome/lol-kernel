@@ -78,7 +78,7 @@ build_kernel_version() {
     local SOURCE_DIR="$SCRIPT_DIR/kernel-source/$KERNEL_VERSION"
 
     log_info "========================================"
-    log_info "Building LolKernel for Android ${KERNEL_VERSION}"
+    log_info "Building $PROJECT_NAME for Android ${KERNEL_VERSION}"
     log_info "========================================"
 
     # Step 1: Check/setup source
