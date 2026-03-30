@@ -125,6 +125,7 @@ fi
 
 # Create Kconfig if not present
 if [[ ! -f "$KERNEL_DIR/fs/susfs/Kconfig" ]]; then
+    mkdir -p "$KERNEL_DIR/fs/susfs"
     cat > "$KERNEL_DIR/fs/susfs/Kconfig" << 'KCONF'
 config SUSFS
 	bool "SUSFS - Stealth Userspace Filesystem"
