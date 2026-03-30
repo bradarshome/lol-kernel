@@ -1,0 +1,33 @@
+# LolKernel - Build outputs
+output/
+*.zip
+*.img
+*.gz
+
+# Kernel source (too large for git)
+kernel-source/
+source/
+
+# Build artifacts
+out/
+bazel-*/
+.cache/
+
+# Temporary files
+tmp/
+*.tmp
+*.log
+
+# Docker volumes
+.docker/
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
