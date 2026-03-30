@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# LolKernel - Apply SUSFS Kernel Patches
+# Apply SUSFS Kernel Patches
 # ============================================
 # Apply SUSFS filesystem patches to GKI kernel
 # Must be applied BEFORE KernelSU driver
@@ -41,82 +41,72 @@ log_info "=== Applying SUSFS Patches ==="
 log_info "Kernel Version: $KERNEL_VERSION"
 log_info "Kernel Dir: $KERNEL_DIR"
 
-# Clone SUSFS
-SUSFS_TEMP="$PROJECT_DIR/tmp/susfs4ksu"
-rm -rf "$SUSFS_TEMP"
-log_info "Cloning SUSFS patches..."
-git clone --depth=1 "$SUSFS_REPO" "$SUSFS_TEMP"
-
-# Determine SUSFS patch branch based on kernel version
+# Map kernel version to correct SUSFS branch
 case "$KERNEL_VERSION" in
     "5.10")
-        SUSFS_PATCH_BRANCH="gki-android12-5.10"
+        SUSFS_BRANCH="gki-android12-5.10"
         ;;
     "6.6")
-        SUSFS_PATCH_BRANCH="gki-android15-6.6"
+        SUSFS_BRANCH="gki-android15-6.6"
         ;;
     *)
-        SUSFS_PATCH_BRANCH="gki-android14-6.1"
+        log_error "Unsupported kernel version for SUSFS: $KERNEL_VERSION"
+        exit 1
         ;;
 esac
 
-# Try to checkout the right branch, fallback to default
-cd "$SUSFS_TEMP"
-if git rev-parse --verify "$SUSFS_PATCH_BRANCH" &>/dev/null; then
-    git checkout "$SUSFS_PATCH_BRANCH"
-    log_info "Checked out branch: $SUSFS_PATCH_BRANCH"
-else
-    log_warn "Branch $SUSFS_PATCH_BRANCH not found, using default branch"
-fi
+# Clone SUSFS with correct branch
+SUSFS_TEMP="$PROJECT_DIR/tmp/susfs4ksu"
+rm -rf "$SUSFS_TEMP"
+log_info "Cloning SUSFS branch: $SUSFS_BRANCH"
+git clone --depth=1 -b "$SUSFS_BRANCH" "$SUSFS_REPO" "$SUSFS_TEMP" 2>&1
 
-# Step 1: Copy SUSFS filesystem code
-log_info "Copying SUSFS filesystem patches..."
-if [[ -d "kernel_patches/fs" ]]; then
-    cp -r kernel_patches/fs/* "$KERNEL_DIR/fs/" 2>/dev/null || true
-    log_info "Copied fs/ patches"
+cd "$SUSFS_TEMP"
+
+# Step 1: Copy SUSFS filesystem code (fs/susfs/)
+log_info "Copying SUSFS filesystem code..."
+if [[ -d "kernel_patches/fs/susfs" ]]; then
+    mkdir -p "$KERNEL_DIR/fs/susfs"
+    cp -r kernel_patches/fs/susfs/* "$KERNEL_DIR/fs/susfs/"
+    log_info "Copied fs/susfs/ ($(ls kernel_patches/fs/susfs/ | wc -l) files)"
 else
-    log_warn "kernel_patches/fs not found, checking alternative paths..."
-    # Some versions use different structure
-    if [[ -d "fs" ]]; then
-        cp -r fs/* "$KERNEL_DIR/fs/" 2>/dev/null || true
-        log_info "Copied fs/ patches (alt path)"
-    fi
+    log_warn "fs/susfs/ not found in SUSFS branch"
 fi
 
 # Step 2: Copy SUSFS headers
 log_info "Copying SUSFS headers..."
 if [[ -d "kernel_patches/include/linux" ]]; then
     cp kernel_patches/include/linux/susfs* "$KERNEL_DIR/include/linux/" 2>/dev/null || true
-    log_info "Copied include/linux/susfs* headers"
-elif [[ -d "include/linux" ]]; then
-    cp include/linux/susfs* "$KERNEL_DIR/include/linux/" 2>/dev/null || true
-    log_info "Copied headers (alt path)"
+    log_info "Copied include/linux/susfs* ($(ls kernel_patches/include/linux/susfs* 2>/dev/null | wc -l) files)"
 fi
 
-# Step 3: Apply patch files
-log_info "Applying SUSFS version patches..."
+# Step 3: Apply ONLY the matching patch
+log_info "Applying SUSFS patch..."
 cd "$KERNEL_DIR"
 
-PATCHES_APPLIED=0
-for patch_file in "$SUSFS_TEMP"/kernel_patches/*.patch "$SUSFS_TEMP"/*.patch; do
+PATCH_APPLIED=0
+for patch_file in "$SUSFS_TEMP"/kernel_patches/*.patch; do
     [[ -f "$patch_file" ]] || continue
 
     patch_name=$(basename "$patch_file")
     log_info "Applying: $patch_name"
 
     if patch -p1 --forward --no-backup-if-mismatch < "$patch_file" 2>/dev/null; then
-        PATCHES_APPLIED=$((PATCHES_APPLIED + 1))
+        PATCH_APPLIED=$((PATCH_APPLIED + 1))
+        log_info "Patch applied successfully"
     else
-        log_warn "Patch $patch_name may have failed (possibly already applied)"
+        log_warn "Patch $patch_name may have failed"
     fi
 done
 
-log_info "Applied $PATCHES_APPLIED SUSFS patch(es)"
+if [[ $PATCH_APPLIED -eq 0 ]]; then
+    log_warn "No SUSFS patches were applied"
+fi
 
-# Step 4: Add SUSFS to Makefile/Kconfig
+# Step 4: Integrate into build system
 log_info "Integrating SUSFS into build system..."
 
-# Add to fs/Makefile if not already present
+# Add to fs/Makefile
 FS_MAKEFILE="$KERNEL_DIR/fs/Makefile"
 if ! grep -q "susfs" "$FS_MAKEFILE" 2>/dev/null; then
     echo "" >> "$FS_MAKEFILE"
@@ -125,28 +115,22 @@ if ! grep -q "susfs" "$FS_MAKEFILE" 2>/dev/null; then
     log_info "Added SUSFS to fs/Makefile"
 fi
 
-# Add to fs/Kconfig if not already present
+# Add to fs/Kconfig
 FS_KCONFIG="$KERNEL_DIR/fs/Kconfig"
 if [[ -f "$FS_KCONFIG" ]] && ! grep -q "susfs" "$FS_KCONFIG" 2>/dev/null; then
-    # Insert before the last 'endmenu' or at the end
     echo "" >> "$FS_KCONFIG"
     echo "source \"fs/susfs/Kconfig\"" >> "$FS_KCONFIG"
     log_info "Added SUSFS to fs/Kconfig"
 fi
 
-# Create SUSFS Kconfig if it exists in susfs dir
-if [[ -f "$KERNEL_DIR/fs/susfs/Kconfig" ]]; then
-    log_info "SUSFS Kconfig found"
-else
-    # Create a basic Kconfig for SUSFS
-    mkdir -p "$KERNEL_DIR/fs/susfs"
+# Create Kconfig if not present
+if [[ ! -f "$KERNEL_DIR/fs/susfs/Kconfig" ]]; then
     cat > "$KERNEL_DIR/fs/susfs/Kconfig" << 'KCONF'
 config SUSFS
 	bool "SUSFS - Stealth Userspace Filesystem"
 	default y
 	help
 	  SUSFS provides filesystem-level root hiding capabilities.
-	  Required for KernelSU root detection bypass.
 
 config SUSFS_SUS_PATH
 	bool "SUSFS - Hide paths from listing"

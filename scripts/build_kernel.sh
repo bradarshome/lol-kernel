@@ -153,10 +153,13 @@ if [[ -f "common/BUILD.bazel" ]]; then
         log_info "Bazel output copied to $BUILD_OUT"
     fi
 
-elif [[ -f "Makefile" ]]; then
-    log_info "Using Make build system (legacy)"
+elif [[ -f "Makefile" || -f "common/Makefile" ]]; then
+    log_info "Using Make build system"
 
-    cd "$KERNEL_DIR"
+    # Ensure we're in the kernel directory (common/)
+    if [[ -f "common/Makefile" ]]; then
+        cd "$KERNEL_DIR"
+    fi
 
     # Set cross-compile variables
     export ARCH=arm64
