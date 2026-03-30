@@ -83,31 +83,35 @@ build_kernel_version() {
 
     # Step 1: Check/setup source
     if [[ ! -d "$SOURCE_DIR/common" ]]; then
-        log_step "Step 1/6: Setting up kernel source..."
+        log_step "Step 1/7: Setting up kernel source..."
         bash "$SCRIPT_DIR/scripts/setup_source.sh" "$KERNEL_VERSION"
     else
-        log_step "Step 1/6: Source exists, skipping setup"
+        log_step "Step 1/7: Source exists, skipping setup"
     fi
 
     # Step 2: Apply SUSFS patches
-    log_step "Step 2/6: Applying SUSFS patches..."
+    log_step "Step 2/7: Applying SUSFS patches..."
     bash "$SCRIPT_DIR/scripts/apply_susfs.sh" "$KERNEL_VERSION" "$SOURCE_DIR"
 
     # Step 3: Apply KernelSU driver
-    log_step "Step 3/6: Applying KernelSU driver..."
+    log_step "Step 3/7: Applying KernelSU driver..."
     bash "$SCRIPT_DIR/scripts/apply_ksu.sh" "$KERNEL_VERSION" "$SOURCE_DIR"
 
     # Step 4: Apply Zygisk support
-    log_step "Step 4/6: Applying Zygisk support..."
+    log_step "Step 4/7: Applying Zygisk support..."
     bash "$SCRIPT_DIR/scripts/apply_zygisk.sh" "$KERNEL_VERSION" "$SOURCE_DIR"
 
-    # Step 5: Build kernel
-    log_step "Step 5/6: Building kernel..."
+    # Step 5: Apply LolPerf module
+    log_step "Step 5/7: Applying LolPerf module..."
+    bash "$SCRIPT_DIR/scripts/apply_lolperf.sh" "$KERNEL_VERSION" "$SOURCE_DIR"
+
+    # Step 6: Build kernel
+    log_step "Step 6/7: Building kernel..."
     bash "$SCRIPT_DIR/scripts/build_kernel.sh" "$KERNEL_VERSION" "$SOURCE_DIR"
 
-    # Step 6: Pack AnyKernel3 flashable zip
+    # Step 7: Pack AnyKernel3 flashable zip
     local BUILD_OUT="$SCRIPT_DIR/$OUTPUT_DIR/$KERNEL_VERSION"
-    log_step "Step 6/6: Packing AnyKernel3 flashable zip..."
+    log_step "Step 7/7: Packing AnyKernel3 flashable zip..."
     bash "$SCRIPT_DIR/scripts/pack_anykernel3.sh" "$KERNEL_VERSION" "$BUILD_OUT"
 
     log_info "========================================"
@@ -204,6 +208,7 @@ main() {
                 bash "$SCRIPT_DIR/scripts/apply_susfs.sh" "$ver" "$SOURCE_DIR"
                 bash "$SCRIPT_DIR/scripts/apply_ksu.sh" "$ver" "$SOURCE_DIR"
                 bash "$SCRIPT_DIR/scripts/apply_zygisk.sh" "$ver" "$SOURCE_DIR"
+                bash "$SCRIPT_DIR/scripts/apply_lolperf.sh" "$ver" "$SOURCE_DIR"
                 ;;
             6)
                 clean_build

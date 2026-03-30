@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# LolPerf - Smart Performance Manager
+#
+
+config LOLPERF
+	bool "LolPerf - Smart Performance Manager"
+	depends on CPU_FREQ && POWER_SUPPLY
+	default y
+	help
+	  Smart performance manager kernel module for Android GKI.
+	  Provides profile-based performance management with auto
+	  battery monitoring and gaming detection.
+
+	  Profiles: powersave, balanced, performance, gaming
+
+	  Interface: /sys/kernel/lolperf/
+
+	  Say Y here to build into kernel.

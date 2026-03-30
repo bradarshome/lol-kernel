@@ -87,6 +87,9 @@ CONFIG_SUSFS_SUS_KSTAT=y
 # Zygisk support
 CONFIG_KSU_ZYGISK=y
 
+# LolPerf - Smart Performance Manager
+CONFIG_LOLPERF=y
+
 # Required for KSU compatibility
 CONFIG_KALLSYMS=y
 CONFIG_KALLSYMS_ALL=y
